@@ -15,8 +15,8 @@ dotenv.config();
 const mongoUtil = require("./db/mongoUtil");
 
 // setup logger
-const logger = Logger(path.basename(__filename));
 const Logger = require("./logger");
+const logger = Logger(path.basename(__filename));
 
 // routes
 const authRoutes = require("./routes/auth");
