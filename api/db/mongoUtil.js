@@ -1,6 +1,11 @@
 const dotenv = require("dotenv");
-dotenv.config();
 const mongoose = require("mongoose");
+dotenv.config();
+
+// setup logger
+const Logger = require("./logger");
+const logger = Logger(path.basename(__filename));
+
 const mongoString = process.env.MONGO_URI;
 var _db;
 
@@ -10,12 +15,13 @@ module.exports = {
     _db = mongoose.connection;
 
     _db.on("error", (error) => {
-      console.log(error);
+      logger.error(error);
       callback(error);
     });
 
     _db.once("connected", () => {
-      console.log("Database Connected");
+      logger.info("Database Connected");
+      callback(false);
     });
   },
 
