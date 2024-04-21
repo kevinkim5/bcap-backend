@@ -10,11 +10,12 @@ const express = require("express");
 const path = require("path");
 const router = express.Router();
 
+const deleteRoute = require("./delete");
 const Logger = require("../../logger");
 const chatHistoryModel = require("../../models/chatModel");
-const logger = Logger(path.basename(__filename));
 
 dotenv.config();
+const logger = Logger(path.basename(__filename));
 
 const MODEL_NAME = process.env.GEMINI_MODEL || "gemini-1.0-pro";
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -49,6 +50,7 @@ const safetySettings = [
 async function runChat(question, history) {
   try {
     logger.info(`Question received: ${question}`);
+    console.log(history);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
     const chat = model.startChat({
@@ -61,7 +63,6 @@ async function runChat(question, history) {
     const result = await chat.sendMessage(question);
     const response = result.response;
     console.log(response);
-    console.log();
     return response.text();
   } catch (err) {
     logger.error(err);
@@ -122,6 +123,17 @@ router.post("/", async function (req, res, next) {
   } catch (err) {
     logger.error(err);
     next(err);
+  }
+});
+
+router.post("/delete", async (req, res, next) => {
+  try {
+    logger.info(`${req.baseUrl}: ${req.body.id}`);
+    const deleteChat = await chatHistoryModel.deleteOne({ _id: req.body.id });
+    res.status(200).json({ deleted: true, id: req.body.id, ...deleteChat });
+  } catch (err) {
+    logger.error(err);
+    res.status(400).json({ deleted: false, err: err.message });
   }
 });
 
