@@ -1,25 +1,24 @@
-const axios = require("axios");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
 const session = require("express-session");
-const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
-const queryString = require("node:querystring");
 const upload = multer();
 
-dotenv.config();
-
+// local imports
 const mongoUtil = require("./db/mongoUtil");
 const sessionOptions = require("./config/session");
 const userModel = require("./models/userModel");
 
+// set up config and port
+dotenv.config();
+const CLIENT_URL = process.env.CLIENT_URL;
 const PORT = process.env.PORT || "3000";
 
-// setup logger
+// set up logger
 const Logger = require("./logger");
 const logger = Logger(path.basename(__filename));
 
@@ -29,17 +28,13 @@ const historyRoutes = require("./routes/history");
 const sessionRoutes = require("./routes/session");
 const usersRouter = require("./routes/users");
 
+// start express app set up
 const app = express();
 app.disable("x-powered-by");
-app.set("trust proxy", 1);
+if (process.env.NODE_ENV === "production") app.set("trust proxy", 1);
 
 // Resolve CORS
-app.use(
-  cors({
-    origin: [process.env.CLIENT_URL],
-    credentials: true,
-  })
-);
+app.use(cors({ credentials: true, origin: [CLIENT_URL] }));
 
 // Parse Cookie
 app.use(cookieParser());
@@ -52,6 +47,7 @@ app.use(upload.any());
 // Session
 app.use(session(sessionOptions));
 
+// Test Query
 app.get("/", (req, res) => res.status(200).send("Backend OK"));
 
 app.post("/login", async function (req, res, next) {
@@ -92,10 +88,8 @@ app.use("/session", sessionRoutes);
 // check for valid session with each API call
 app.use(function (req, res, next) {
   const sessionData = req.session;
-  logger.info(
-    `${req.path} - isLoggedIn: ${sessionData && sessionData.isLoggedIn}`
-  );
   if (!sessionData || !sessionData.isLoggedIn) {
+    logger.info(`${req.baseUrl} - Session Expired`);
     res.status(403).json({ err: "Session Expired" });
   } else {
     next();
@@ -131,7 +125,6 @@ const connectWithRetry = function () {
   // need to be able to connect to MongoDB before API can be started
   return mongoUtil.connectToServer(function (err, client) {
     if (err) {
-      // console.log(err);
       logger.error(err);
       setTimeout(connectWithRetry, 5000);
     } else {
