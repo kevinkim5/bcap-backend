@@ -31,6 +31,8 @@ const usersRouter = require("./routes/users");
 
 const app = express();
 app.disable("x-powered-by");
+app.set("trust proxy", 1);
+
 // Resolve CORS
 app.use(
   cors({
