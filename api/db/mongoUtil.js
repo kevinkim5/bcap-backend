@@ -1,9 +1,10 @@
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
+const path = require("path");
 dotenv.config();
 
 // setup logger
-const Logger = require("./logger");
+const Logger = require("../logger");
 const logger = Logger(path.basename(__filename));
 
 const mongoString = process.env.MONGO_URI;
