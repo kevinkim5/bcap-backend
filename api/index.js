@@ -49,7 +49,6 @@ app.get("/", (req, res) => res.status(200).send("Backend OK"));
 
 // place login route before check for session
 // login will assign the session
-// app.use("/login", loginRoute);
 app.post("/", async function (req, res, next) {
   logger.info(req.baseUrl);
   try {
