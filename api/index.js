@@ -49,7 +49,7 @@ app.get("/", (req, res) => res.status(200).send("Backend OK"));
 
 // place login route before check for session
 // login will assign the session
-app.post("/", async function (req, res, next) {
+app.post("/login", async function (req, res, next) {
   logger.info(req.baseUrl);
   try {
     const logUserInDB = await userModel.findOneAndUpdate(
@@ -93,9 +93,9 @@ app.use(function (req, res, next) {
 });
 
 // use common router for cleanliness
+app.use("/session", sessionRoutes);
 app.use("/chat", chatRoutes);
 app.use("/history", historyRoutes);
-app.use("/session", sessionRoutes);
 
 app.get("/logout", (req, res) => {
   req.session.destroy((err) => {
