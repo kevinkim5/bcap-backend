@@ -14,6 +14,10 @@ const sessionOptions = require("./config/session");
 const userModel = require("./models/userModel");
 const loginRoute = require("./routes/login");
 const router = require("./routes/router");
+const chatRoutes = require("./routes/chat");
+const historyRoutes = require("./routes/history");
+const logoutRoute = require("./routes/logout");
+const sessionRoutes = require("./routes/session");
 
 // set up config and port
 dotenv.config();
@@ -62,7 +66,10 @@ app.use(function (req, res, next) {
 });
 
 // use common router for cleanliness
-app.use("/", router);
+app.use("/chat", chatRoutes);
+app.use("/history", historyRoutes);
+app.use("/logout", logoutRoute);
+app.use("/session", sessionRoutes);
 
 // app.get("/logout", (req, res) => {
 //   req.session.destroy((err) => {
