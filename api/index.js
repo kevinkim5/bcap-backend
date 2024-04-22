@@ -51,7 +51,7 @@ app.use(session(sessionOptions));
 app.get("/", (req, res) => res.status(200).send("Backend OK"));
 
 app.post("/login", async function (req, res, next) {
-  logger.info(req.path);
+  logger.info(req.baseUrl);
   try {
     const logUserInDB = await userModel.findOneAndUpdate(
       { email: req.body.email },
@@ -82,15 +82,12 @@ app.post("/login", async function (req, res, next) {
   }
 });
 
-// used to check for valid session on initial load
-app.use("/session", sessionRoutes);
-
 // check for valid session with each API call
 app.use(function (req, res, next) {
   const sessionData = req.session;
   if (!sessionData || !sessionData.isLoggedIn) {
     logger.info(`${req.baseUrl} - Session Expired`);
-    res.status(403).json({ err: "Session Expired" });
+    res.status(403).json({ isLoggedIn: false, err: "Session Expired" });
   } else {
     next();
   }
@@ -98,6 +95,7 @@ app.use(function (req, res, next) {
 
 app.use("/chat", chatRoutes);
 app.use("/history", historyRoutes);
+app.use("/session", sessionRoutes);
 app.use("/users", usersRouter);
 
 app.get("/logout", (req, res) => {

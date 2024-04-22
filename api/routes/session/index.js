@@ -6,7 +6,7 @@ const logger = Logger(path.basename(__filename));
 
 router.get("", (req, res) => {
   if (!req.session || !req.session.isLoggedIn) {
-    logger.info(`${req.path}: Session Expired`);
+    logger.info(`${req.baseUrl}: Session Expired`);
     res
       .status(403)
       .json({ isLoggedIn: req.session.isLoggedIn, err: "Session Expired" });
