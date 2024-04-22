@@ -49,7 +49,6 @@ const safetySettings = [
 async function runChat(question, history) {
   try {
     logger.info(`Question received: ${question}`);
-    console.log(history);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
     const chat = model.startChat({
@@ -61,7 +60,6 @@ async function runChat(question, history) {
     logger.info("Sending question");
     const result = await chat.sendMessage(question);
     const response = result.response;
-    console.log(response);
     return response.text();
   } catch (err) {
     logger.error(err);

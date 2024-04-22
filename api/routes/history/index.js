@@ -22,12 +22,11 @@ const genAI = new GoogleGenerativeAI(API_KEY);
 
 router.get("/:email", async function (req, res, next) {
   try {
-    logger.info(req.path);
+    logger.info(req.baseUrl);
     const email = req.params.email;
     const chatHistory = await chatHistoryModel
       .find({ email: email })
       .sort([["updatedAt", -1]]);
-    console.log(chatHistory);
 
     res.status(200).json(chatHistory);
   } catch (err) {
