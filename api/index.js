@@ -12,11 +12,8 @@ const upload = multer();
 const mongoUtil = require("./db/mongoUtil");
 const sessionOptions = require("./config/session");
 const userModel = require("./models/userModel");
-const loginRoute = require("./routes/login");
-const router = require("./routes/router");
 const chatRoutes = require("./routes/chat");
 const historyRoutes = require("./routes/history");
-const logoutRoute = require("./routes/logout");
 const sessionRoutes = require("./routes/session");
 
 // set up config and port
@@ -52,7 +49,38 @@ app.get("/", (req, res) => res.status(200).send("Backend OK"));
 
 // place login route before check for session
 // login will assign the session
-app.use("/login", loginRoute);
+// app.use("/login", loginRoute);
+app.post("/", async function (req, res, next) {
+  logger.info(req.baseUrl);
+  try {
+    const logUserInDB = await userModel.findOneAndUpdate(
+      { email: req.body.email },
+      {
+        $set: {
+          name: req.body.name,
+          picture: req.body.picture || "",
+          updatedAt: new Date(),
+        },
+        // Create if not found
+        $setOnInsert: {
+          createdAt: new Date(),
+        },
+      },
+      { new: true, upsert: true }
+    );
+
+    req.session.isLoggedIn = true;
+    req.session.user = {
+      email: req.body.email,
+      name: req.body.name,
+      picture: req.body.picture,
+    };
+    res.status(200).json(logUserInDB);
+  } catch (err) {
+    logger.error(err);
+    res.status(400).json({ message: err.message });
+  }
+});
 
 // check for valid session with each API call
 app.use(function (req, res, next) {
@@ -68,20 +96,19 @@ app.use(function (req, res, next) {
 // use common router for cleanliness
 app.use("/chat", chatRoutes);
 app.use("/history", historyRoutes);
-app.use("/logout", logoutRoute);
 app.use("/session", sessionRoutes);
 
-// app.get("/logout", (req, res) => {
-//   req.session.destroy((err) => {
-//     if (err) {
-//       logger.error(err);
-//       res.status(422).send({ err: err.message });
-//     } else {
-//       res.clearCookie(process.env.SESSION_NAME);
-//       res.send({ loggedIn: false });
-//     }
-//   });
-// });
+app.get("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      logger.error(err);
+      res.status(422).send({ err: err.message });
+    } else {
+      res.clearCookie(process.env.SESSION_NAME);
+      res.send({ loggedIn: false });
+    }
+  });
+});
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
