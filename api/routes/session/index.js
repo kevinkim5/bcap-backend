@@ -11,6 +11,7 @@ router.get("", (req, res) => {
       .status(403)
       .json({ isLoggedIn: req.session.isLoggedIn, err: "Session Expired" });
   } else {
+    logger.info(`${req.baseUrl}: Session Valid`);
     res.status(200).json({
       isLoggedIn: req.session.isLoggedIn,
       ...req.session.user,
