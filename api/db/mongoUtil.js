@@ -12,6 +12,7 @@ var _db;
 
 module.exports = {
   connectToServer: function (callback) {
+    logger.info("Connecting to MongoDB...");
     mongoose.connect(mongoString);
     _db = mongoose.connection;
 

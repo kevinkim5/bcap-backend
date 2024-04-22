@@ -12,6 +12,9 @@ const upload = multer();
 const mongoUtil = require("./db/mongoUtil");
 const sessionOptions = require("./config/session");
 const userModel = require("./models/userModel");
+const chatRoutes = require("./routes/chat");
+const historyRoutes = require("./routes/history");
+const sessionRoutes = require("./routes/session");
 
 // set up config and port
 dotenv.config();
@@ -21,12 +24,6 @@ const PORT = process.env.PORT || "3000";
 // set up logger
 const Logger = require("./logger");
 const logger = Logger(path.basename(__filename));
-
-// routes
-const chatRoutes = require("./routes/chat");
-const historyRoutes = require("./routes/history");
-const sessionRoutes = require("./routes/session");
-const usersRouter = require("./routes/users");
 
 // start express app set up
 const app = express();
@@ -50,8 +47,10 @@ app.use(session(sessionOptions));
 // Test Query
 app.get("/", (req, res) => res.status(200).send("Backend OK"));
 
-app.post("/login", async function (req, res, next) {
-  logger.info(req.path);
+// place login route before check for session
+// login will assign the session
+app.post("/", async function (req, res, next) {
+  logger.info(req.baseUrl);
   try {
     const logUserInDB = await userModel.findOneAndUpdate(
       { email: req.body.email },
@@ -82,23 +81,21 @@ app.post("/login", async function (req, res, next) {
   }
 });
 
-// used to check for valid session on initial load
-app.use("/session", sessionRoutes);
-
 // check for valid session with each API call
 app.use(function (req, res, next) {
   const sessionData = req.session;
   if (!sessionData || !sessionData.isLoggedIn) {
     logger.info(`${req.baseUrl} - Session Expired`);
-    res.status(403).json({ err: "Session Expired" });
+    res.status(403).json({ isLoggedIn: false, err: "Session Expired" });
   } else {
     next();
   }
 });
 
+// use common router for cleanliness
 app.use("/chat", chatRoutes);
 app.use("/history", historyRoutes);
-app.use("/users", usersRouter);
+app.use("/session", sessionRoutes);
 
 app.get("/logout", (req, res) => {
   req.session.destroy((err) => {
