@@ -1,4 +1,4 @@
-# B CAPITAL Full Stack Developer Exercise - Backend
+# Brain Bot - Backend
 
 ## Overview
 
@@ -25,3 +25,6 @@ This project implements the server-side logic for Brain Bot, leveraging the powe
    - `npm run start`
    - This will start the development server at `http://localhost:3030` by default.
    - If you need to use another port, set the port in `.env`
+
+### App URL
+https://bcap-backend.vercel.app
